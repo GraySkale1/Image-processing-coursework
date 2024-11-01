@@ -4,8 +4,9 @@ from PIL import Image
 
 WIDTH, HEIGHT = 1920, 1080
 
-load = bw.FormPage(100, 100, "Generic")
+load = bw.LoadPage(100, 100, "Generic")
 load.run()
 
-im = IP.ImManipulate(load.path)
+#im = IP.ImManipulate(load.path)
+
 
