@@ -1,12 +1,6 @@
 import tkinter as tk
 from functools import partial
-
-
-class Gscene():
-    """Generic class that has default functions to prevent N"""
-    def ReadButtons(self):
-        """Outputs a list of dictionaries that contains the data for the scene's buttons"""
-        return []
+from datetime import datetime
 
 
 class SceneManager():
@@ -20,27 +14,12 @@ class SceneManager():
         self.RefreshPage()
         self.root.mainloop()
 
-
-    def ButtonBuilder(self, DictTemplate:dict, DictOverride:dict = {}) -> tk.Button:
-
-        # Deletes any elements in DictTemplate that also appear in DictOverride
-        for attribute in DictTemplate:
-            if attribute in DictOverride:
-                del DictTemplate[attribute]
-
-        if "command" in DictTemplate.keys():
-            DictTemplate["command"] = partial(DictTemplate["command"], self) #partial creates a peusdo-lambda function that preloads the scenemanager class inside itself
-
-        return tk.Button(self.root, **DictTemplate, **DictOverride)
-
-    def _LoadScene(self, SceneClass:Gscene):
-        buttons = SceneClass.ReadButtons()
-        for ButtonDict in buttons:
-            b = self.ButtonBuilder(DictTemplate=ButtonDict)
-            b.pack()
+    def _LoadScene(self, SceneClass):
+        SceneClass.Build(self)
 
     def WipePage(self):
-        raise NotImplementedError
+        for child in self.root.winfo_children():
+            child.destroy()
 
 
     def _PickScene(self):
@@ -53,7 +32,7 @@ class SceneManager():
 
     def RefreshPage(self):
         """Clears all widgets, determines the current scene and displays its widgets"""
-        #self.WipePage()
+        self.WipePage()
 
         SceneClass = self._PickScene()
         self._LoadScene(SceneClass)
@@ -62,15 +41,63 @@ class SceneManager():
     #~~~~~~~~~~~~~~~~~~~~~~~
     # Inner classes
 
-    class Start(Gscene):
-        def ReadButtons(self):
-            return [{"text":"Click Me", "command":self.ButtonClicked, "padx":25, "pady":25}]
+    class Start():
+        def Build(self, manager:"SceneManager"):
+            global PhotoName
+            global DateOfCapture
+            global DateOfSub
+            global Description
 
-        @staticmethod
-        def ButtonClicked(manager:"SceneManager"):
+            PhotoName = tk.StringVar(manager.root)
+            DateOfCapture = tk.StringVar(manager.root)
+            DateOfSub = tk.StringVar(manager.root)
+            Description = tk.StringVar(manager.root)
+
+            VarNames = [PhotoName, DateOfCapture, DateOfSub, Description]
+            FormText = ["Photo Name:", "Date of Capture", "Date of Submission", "Description: (250 character limit)"]
+            FormList = []
+
+            for i, text in enumerate(FormText):
+                form = self.CreateForm(text, manager.root, VarNames[i])
+
+            button = tk.Button(manager.root, text="Enter", command=partial(self.SwitchScenes, manager), padx=25, pady=15)
+            button.pack()
+
+
+        def ButtonPress(self, manager:"SceneManager"):
+            """Validates all inputs from forms then switches scenes"""
+            sequence = "%d-%m-%Y"
+            DOC = DateOfCapture.get()
+
+            #checks if date is in a valid dd/mm/yyyy
+            match = True
+            try:
+                match = bool(datetime.strptime(test_str, sequence))
+            except ValueError:
+                match = Falseformat = "%d-%m-%Y"
+
+            if match == False:
+                pass
+
+
+
+            self.SwitchScenes(manager)
+            
+
+        def SwitchScenes(self, manager:"SceneManager"):
             """Ok look, button presses need to be static methods and pass the outer scene manager as an input (button builder does that)"""
+
             manager.CurSceneID = 1
             manager._PickScene()
+
+        @staticmethod
+        def CreateForm(text:str, root:tk.Tk, TextVar:str):
+            """Creates and packs a label and corresponding entry widget"""
+            label = tk.Label(root, text=text, padx=25, pady=1)
+            label.pack()
+            entry = tk.Entry(root, textvariable=TextVar)
+            entry.pack()
+
 
 if __name__ == '__main__':
     import main
