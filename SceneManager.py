@@ -1,16 +1,16 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageOps, ImageTk
 from tkinter.filedialog import askopenfilename
 from functools import partial
 from datetime import datetime
 
 
 class SceneManager():
-    def __init__(self, shape:tuple):
+    def __init__(self, DefaultShape:tuple):
         self.CurSceneID = 0
         self.ImageDir = ''
 
-        width, height = shape
+        width, height = DefaultShape
         self.root = tk.Tk()
         self.root.geometry(f"{width}x{height}")
         self.RefreshPage()
@@ -107,7 +107,7 @@ class SceneManager():
             """Method that tells the SceneManager container to change scenes"""
 
             manager.CurSceneID = 1
-            manager._PickScene()
+            manager.RefreshPage()
 
         @staticmethod
         def CreateForm(text:str, root:tk.Tk, TextVar:str):
@@ -120,12 +120,44 @@ class SceneManager():
 
     class ImageEditor():
         def Build(self, manager:"SceneManager"):
-            self.ImageContainer = tk.Label(manager.root)
-            self.ImageContainer.pack()
+            """This method is called when the scene needs to be rendered by the SceneManager\n It creates and renders all the elements to the screen"""
+            self.manager = manager
 
-            self.Img = ImageTk.PhotoImage(Image.open(Imagemanager.ImageDir))
-            self.ImageContainer.configure(image=self.Img)
-            self.label.image = self.Img
+            manager.root.geometry("1200x600")
+            manager.root.rowconfigure(4, {'minsize': 30})
+            manager.root.columnconfigure(4, {'minsize': 30})
+
+            #setting up image to be rendered 
+            self.ImageContainer = tk.Label(manager.root)
+            self.ImageContainer.pack(side=tk.RIGHT)
+            self.Img = ImageTk.PhotoImage(Image.open(manager.ImageDir))
+            self.DisplayImg = self.Img
+            self.ImageContainer.configure(image=self.DisplayImg)
+
+        def UpdateImage(self):
+            """Swaps the data from self.DisplayImg and self.Img and rerenders self.DisplayImage\n (all processes are performed on self.Img, not on self.DisplayImg)"""
+            temp = self.DisplayImage
+            self.DisplayImg = self.Img
+            self.Img = temp
+
+            self.ImageContainer.configure(image=self.DisplayImg)
+
+        def Undo(self):
+            """Undoes the last performed action (only remembers last action)"""
+            self.UpdateImage()
+
+
+        def ContinuityFix(self):
+            """Should be run before any process is performed on the image to prevent disconnect between self.Img and self.DisplayImg"""
+            if self.DisplayImg != self.Img:
+                self.Img = self.DisplayImg
+
+        def GrayScale(self):
+            self.ContinuityFix()
+
+            RawImage = ImageTk.getimage()
+
+            self.UpdateImage()
 
 if __name__ == '__main__':
     import main

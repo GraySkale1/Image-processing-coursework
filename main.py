@@ -1,5 +1,5 @@
 import SceneManager as sm
 
-SHAPE = (500, 500)
+SHAPE = (500,500)
 
-new = sm.SceneManager(shape=SHAPE)
+new = sm.SceneManager(DefaultShape=SHAPE)
