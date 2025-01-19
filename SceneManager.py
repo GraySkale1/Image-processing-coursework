@@ -1,3 +1,4 @@
+import numpy as np
 import tkinter as tk
 from PIL import Image, ImageOps, ImageTk, ImageChops
 from tkinter.filedialog import askopenfilename
@@ -180,7 +181,17 @@ class SceneManager():
             self.ContinuityFix()
 
             RawImage = ImageTk.getimage(self.Img)
-            InvertedImage = ImageChops.invert(RawImage)
+            pixels = np.array(RawImage)
+
+            if pixels.ndim == 3 and pixels.shape[2] == 4:  
+                rgb = pixels[:, :, :3]  
+                alpha = pixels[:, :, 3]  
+                InvertedRBG = 255 - rgb  
+                InvertedPixels = np.dstack((InvertedRBG, alpha))  
+            else:
+                InvertedPixels = 255 - pixels
+
+            InvertedImage = Image.fromarray(InvertedPixels.astype('uint8'), 'RGBA')
             self.Img = ImageTk.PhotoImage(InvertedImage)
 
             self.UpdateImage()
