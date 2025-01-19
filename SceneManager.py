@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageOps, ImageTk
+from PIL import Image, ImageOps, ImageTk, ImageChops
 from tkinter.filedialog import askopenfilename
 from functools import partial
 from datetime import datetime
@@ -118,25 +118,39 @@ class SceneManager():
             entry.pack()
 
 
+
+
+
     class ImageEditor():
         def Build(self, manager:"SceneManager"):
             """This method is called when the scene needs to be rendered by the SceneManager\n It creates and renders all the elements to the screen"""
-            self.manager = manager
 
-            manager.root.geometry("1200x600")
-            manager.root.rowconfigure(4, {'minsize': 30})
-            manager.root.columnconfigure(4, {'minsize': 30})
 
             #setting up image to be rendered 
             self.ImageContainer = tk.Label(manager.root)
-            self.ImageContainer.pack(side=tk.RIGHT)
             self.Img = ImageTk.PhotoImage(Image.open(manager.ImageDir))
             self.DisplayImg = self.Img
+
+            manager.root.geometry(f"{self.Img.width() + 200}x{self.Img.height()}")
+            manager.root.rowconfigure(4, {'minsize': 30})
+            manager.root.columnconfigure(4, {'minsize': 30})
+
+            self.ImageContainer.grid(row=0,column=4,rowspan=4, columnspan=1, sticky='e')
             self.ImageContainer.configure(image=self.DisplayImg)
+            
+            #setting up buttons to process the image
+            self.GrayScaleButton = tk.Button(manager.root, text="Grayscale", command=self.GrayScale, padx=25, pady=25)
+            self.GrayScaleButton.grid(row=0,column=2)
+            self.UndoButton = tk.Button(manager.root, text="Undo", command=self.Undo, padx=25, pady=25)
+            self.UndoButton.grid(row=2, column=2)
+            self.InvertButton = tk.Button(manager.root, text="Invert image", command=self.Invert, padx=25, pady=25)
+            self.InvertButton.grid(row=1,column=2)
+
+
 
         def UpdateImage(self):
             """Swaps the data from self.DisplayImg and self.Img and rerenders self.DisplayImage\n (all processes are performed on self.Img, not on self.DisplayImg)"""
-            temp = self.DisplayImage
+            temp = self.DisplayImg
             self.DisplayImg = self.Img
             self.Img = temp
 
@@ -152,10 +166,22 @@ class SceneManager():
             if self.DisplayImg != self.Img:
                 self.Img = self.DisplayImg
 
+
         def GrayScale(self):
             self.ContinuityFix()
 
-            RawImage = ImageTk.getimage()
+            RawImage = ImageTk.getimage(self.Img)
+            GrayImage = ImageOps.grayscale(RawImage)
+            self.Img = ImageTk.PhotoImage(GrayImage)
+
+            self.UpdateImage()
+
+        def Invert(self):
+            self.ContinuityFix()
+
+            RawImage = ImageTk.getimage(self.Img)
+            InvertedImage = ImageChops.invert(RawImage)
+            self.Img = ImageTk.PhotoImage(InvertedImage)
 
             self.UpdateImage()
 
