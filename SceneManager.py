@@ -1,6 +1,7 @@
 import numpy as np
 import tkinter as tk
-from PIL import Image, ImageOps, ImageTk, ImageChops
+from PIL import Image, ImageOps, ImageTk, ImageChops, ImageFilter
+import PIL
 from tkinter.filedialog import askopenfilename
 from functools import partial
 from datetime import datetime
@@ -125,7 +126,7 @@ class SceneManager():
     class ImageEditor():
         def Build(self, manager:"SceneManager"):
             """This method is called when the scene needs to be rendered by the SceneManager\n It creates and renders all the elements to the screen"""
-
+            self.blur = 0
 
             #setting up image to be rendered 
             self.ImageContainer = tk.Label(manager.root)
@@ -143,9 +144,11 @@ class SceneManager():
             self.GrayScaleButton = tk.Button(manager.root, text="Grayscale", command=self.GrayScale, padx=25, pady=25)
             self.GrayScaleButton.grid(row=0,column=2)
             self.UndoButton = tk.Button(manager.root, text="Undo", command=self.Undo, padx=25, pady=25)
-            self.UndoButton.grid(row=2, column=2)
+            self.UndoButton.grid(row=3, column=2)
             self.InvertButton = tk.Button(manager.root, text="Invert image", command=self.Invert, padx=25, pady=25)
             self.InvertButton.grid(row=1,column=2)
+            self.BlurButton = tk.Button(manager.root, text="Blur image", command=self.BlurImage, padx=25, pady=25)
+            self.BlurButton.grid(row=2,column=2)
 
 
 
@@ -193,6 +196,17 @@ class SceneManager():
 
             InvertedImage = Image.fromarray(InvertedPixels.astype('uint8'), 'RGBA')
             self.Img = ImageTk.PhotoImage(InvertedImage)
+
+            self.UpdateImage()
+
+        def BlurImage(self):
+            self.ContinuityFix()
+
+            self.blur += 1
+
+            RawImage = ImageTk.getimage(self.Img)
+            blur = RawImage.filter(ImageFilter.GaussianBlur(self.blur))
+            self.Img = ImageTk.PhotoImage(blur)
 
             self.UpdateImage()
 
