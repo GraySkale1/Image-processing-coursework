@@ -184,6 +184,7 @@ class SceneManager():
             pixels = np.array(RawImage)
 
             if pixels.ndim == 3 and pixels.shape[2] == 4:  
+                #splits array into rgb values and the alpha channel
                 rgb = pixels[:, :, :3]  
                 alpha = pixels[:, :, 3]  
                 InvertedRBG = 255 - rgb  
