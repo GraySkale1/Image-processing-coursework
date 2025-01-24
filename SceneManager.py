@@ -75,7 +75,7 @@ class SceneManager():
         def ButtonPress(self, manager:"SceneManager"):
             """Validates all inputs from forms then switches scenes"""
 
-            manager.ImageDir = self.GetUserImage(manager)
+            valid, manager.ImageDir = self.GetUserImage(manager)
 
             sequence = "%d-%m-%Y"
             DOC = DateOfCapture.get()
@@ -86,23 +86,24 @@ class SceneManager():
                 match = bool(datetime.strptime(DOC, sequence))
             except ValueError:
                 match = False
-
-            if match == False:
+            
+            if valid == True:
                 self.SwitchScenes(manager)
 
             
         def GetUserImage(self, manager:"SceneManager"):
             "Asks the user to select an image and validates it"
             ImDir = askopenfilename()
+            Valid = False
             #validates if image is in a usable format
             try:
                 img = Image.open(ImDir)
                 img.verify()
+                Valid= True
             except:
-                label = tk.Label(manager.root, text="Invalid format, image type may not be supported or image is corrupted", fg="red", padx=1,pady=1)
-                label.pack()
+                self.RaiseError(title="FileError", text="Unsupported File Type")
                 ImDir = ""
-            return ImDir
+            return Valid, ImDir
 
 
         def SwitchScenes(self, manager:"SceneManager"):
@@ -110,6 +111,11 @@ class SceneManager():
 
             manager.CurSceneID = 1
             manager.RefreshPage()
+
+
+        def RaiseError(self, title, text):
+            ErrorMsg = tk.messagebox.showerror(title=title, message=text)
+            #ErrorMsg.showerror()
 
         @staticmethod
         def CreateForm(text:str, root:tk.Tk, TextVar:str):
