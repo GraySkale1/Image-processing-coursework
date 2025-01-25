@@ -1,8 +1,3 @@
-import tkinter as tk
-from PIL import ImageTk, Image
+string = 'test\n test\n'
 
-root = tk.Tk()
-
-Img = ImageTk.PhotoImage(Image.open('fruits.png'))
-
-real = ImageTk.getimage
+print(string[0:-1])
